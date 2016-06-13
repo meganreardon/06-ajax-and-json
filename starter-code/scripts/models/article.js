@@ -55,7 +55,7 @@ Article.fetchAll = function() {
     localCopy = JSON.parse(localStorage.getItem('hackerIpsum'));
     Article.loadAll(localCopy);
     // TODO: Now let's render the index page.
-    Article.toHtml(localCopy);
+    articleView.renderIndexPage();
   } else {
     /* TODO: Otherwise, without our localStorage data we need to:
     - Retrieve our JSON file asynchronously
@@ -64,17 +64,18 @@ Article.fetchAll = function() {
       1. Load our JSON data,
       2. Store that same data in localStorage so we can skip the server call next time,
       3. And then render the index page. */
-    $.getJSON('/data/hackerIpsum.json', function(data) {
-      localCopy = Article.loadAll(data);
-      localStorage.setItem('hackerIpsum', JSON.stringify(localCopy));
-      Article.loadAll(localCopy);
-      Article.toHtml(localCopy);
+    console.log('initial loading of hackerIpsum from server');
+    $.getJSON('data/hackerIpsum.json', function(data) {
+      // localCopy = Article.loadAll(data);
+      localStorage.setItem('hackerIpsum', JSON.stringify(data));
+      Article.loadAll(data);
+      articleView.renderIndexPage();
     });
   }
 };
 
 /* Great work so far! STRETCH GOAL TIME!? Refactor your fetchAll above, or
-   get some additional typing practice here. Our main goal in this part of the
+   get some additional typing practice here. Our main goal in this part oaf the
    lab will be saving the eTag located in Headers, to see if it's been updated!
 
   Article.fetchAll = function() {
