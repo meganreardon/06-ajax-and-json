@@ -1,10 +1,13 @@
+var localCopy = {};
+var localCopyLS = {};
+
 function Article (opts) {
   for (keys in opts) {
     this[keys] = opts[keys];
   }
 }
 
-/* TODO: Instead of a global `articles = []` array, let's track this list of all
+/* DONE: Instead of a global `articles = []` array, let's track this list of all
  articles directly on the constructor function. Note: it is NOT on the prototype.
  In JavaScript, functions are themselves objects, which means we can add
  properties/values to them at any time. In this case, we have a key:value pair
@@ -30,7 +33,7 @@ Article.prototype.toHtml = function(scriptTemplateId) {
  call these "class-level" functions, that are relevant to the entire "class"
  of objects that are Articles, rather than just one instance. */
 
-/* TODO: Refactor this code into a function for greater control.
+/* DONE: Refactor this code into a function for greater control.
     It will take in our data, and process it via the Article constructor: */
 Article.loadAll = function(dataWePassIn) {
   dataWePassIn.sort(function(a,b) {
@@ -49,7 +52,10 @@ Article.fetchAll = function() {
      1. We can process and load it,
      2. Then we can render the index page */
     // Article.loadAll(//TODO: Invoke with our localStorage!);
+    localCopy = JSON.parse(localStorage.getItem('hackerIpsum'));
+    Article.loadAll(localCopy);
     // TODO: Now let's render the index page.
+    Article.toHtml(localCopy);
   } else {
     /* TODO: Otherwise, without our localStorage data we need to:
     - Retrieve our JSON file asynchronously
@@ -58,6 +64,12 @@ Article.fetchAll = function() {
       1. Load our JSON data,
       2. Store that same data in localStorage so we can skip the server call next time,
       3. And then render the index page. */
+    $.getJSON('/data/hackerIpsum.json', function(data) {
+      localCopy = Article.loadAll(data);
+      localStorage.setItem('hackerIpsum', JSON.stringify(localCopy));
+      Article.loadAll(localCopy);
+      Article.toHtml(localCopy);
+    });
   }
 };
 
