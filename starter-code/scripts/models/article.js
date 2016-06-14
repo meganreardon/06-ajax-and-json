@@ -46,25 +46,66 @@ Article.loadAll = function(dataWePassIn) {
 
 /* This function below will retrieve the data from either a local or remote
  source, process it, then hand off control to the View: */
+
+// Article.fetchAll = function() {
+//   if (localStorage.hackerIpsum) {
+//     /* When our data is already in localStorage:
+//      1. We can process and load it,
+//      2. Then we can render the index page */
+//     // Article.loadAll(//TODO: Invoke with our localStorage!);
+//     localCopy = JSON.parse(localStorage.getItem('hackerIpsum'));
+//     Article.loadAll(localCopy);
+//     // TODO: Now let's render the index page.
+//     articleView.renderIndexPage();
+//   } else {
+//     /* TODO: Otherwise, without our localStorage data we need to:
+//     - Retrieve our JSON file asynchronously
+//       (which jQuery method is best for this?).
+//     Within this jQuery method, we should:
+//       1. Load our JSON data,
+//       2. Store that same data in localStorage so we can skip the server call next time,
+//       3. And then render the index page. */
+//     console.log('initial loading of hackerIpsum from server');
+//     $.getJSON('data/hackerIpsum.json', function(data) {
+//       // localCopy = Article.loadAll(data);
+//       localStorage.setItem('hackerIpsum', JSON.stringify(data));
+//       Article.loadAll(data);
+//       articleView.renderIndexPage();
+//     });
+//   }
+// };
+
+/* Great work so far! STRETCH GOAL TIME!? Refactor your fetchAll above, or
+   get some additional typing practice here. Our main goal in this part oaf the
+   lab will be saving the eTag located in Headers, to see if it's been updated!
+*/
 Article.fetchAll = function() {
   if (localStorage.hackerIpsum) {
-    /* When our data is already in localStorage:
-     1. We can process and load it,
-     2. Then we can render the index page */
-    // Article.loadAll(//TODO: Invoke with our localStorage!);
-    localCopy = JSON.parse(localStorage.getItem('hackerIpsum'));
-    Article.loadAll(localCopy);
-    // TODO: Now let's render the index page.
-    articleView.renderIndexPage();
+    // Let's make a request to get the eTag (hint: you may need to use a different
+    // jQuery method for this more explicit request).
+    $.ajax({
+      type: 'HEAD',
+      url: '/data/hackerIpsum.json',
+      success: function (data, message, xhr) {
+        var eTag = xhr.getResponseHeader('eTag');
+        if ( !localStorage.eTag || eTag !== localStorage.eTag ) {
+          localStorage.eTag = eTag;
+          $.getJSON('data/hackerIpsum.json', function(data) {
+            // localCopy = Article.loadAll(data);
+            localStorage.setItem('hackerIpsum', JSON.stringify(data));
+            Article.loadAll(data);
+            articleView.renderIndexPage();
+          });
+        }
+        else {
+          localCopy = JSON.parse(localStorage.getItem('hackerIpsum'));
+          Article.loadAll(localCopy);
+          // TODO: Now let's render the index page.
+          articleView.renderIndexPage();
+        }
+      }
+    });
   } else {
-    /* TODO: Otherwise, without our localStorage data we need to:
-    - Retrieve our JSON file asynchronously
-      (which jQuery method is best for this?).
-    Within this jQuery method, we should:
-      1. Load our JSON data,
-      2. Store that same data in localStorage so we can skip the server call next time,
-      3. And then render the index page. */
-    console.log('initial loading of hackerIpsum from server');
     $.getJSON('data/hackerIpsum.json', function(data) {
       // localCopy = Article.loadAll(data);
       localStorage.setItem('hackerIpsum', JSON.stringify(data));
@@ -73,15 +114,3 @@ Article.fetchAll = function() {
     });
   }
 };
-
-/* Great work so far! STRETCH GOAL TIME!? Refactor your fetchAll above, or
-   get some additional typing practice here. Our main goal in this part oaf the
-   lab will be saving the eTag located in Headers, to see if it's been updated!
-
-  Article.fetchAll = function() {
-    if (localStorage.hackerIpsum) {
-      // Let's make a request to get the eTag (hint: you may need to use a different
-      // jQuery method for this more explicit request).
-    } else {}
-  }
-*/
